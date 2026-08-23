@@ -1,0 +1,10 @@
+package wasm-bench-test:component@0.1.0;
+
+interface component {
+    add: func(x: s32, y: s32) -> s32;
+}
+
+world component-world {
+    export component;
+}
+

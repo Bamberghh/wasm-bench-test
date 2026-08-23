@@ -1,0 +1,15 @@
+[package]
+name = "wasm-bench-test"
+version = "0.1.0"
+edition = "2024"
+
+[dev-dependencies]
+criterion = "0.8.2"
+
+[dependencies]
+wasmtime = "48.0.0"
+wasmtime-wasi = "48.0.0"
+
+[[bench]]
+name = "call"
+harness = false
