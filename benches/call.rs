@@ -1,7 +1,6 @@
 use criterion::{Criterion, criterion_group, criterion_main};
-use wasm_bench_test::{ComponentHost, ModuleHost};
 use std::hint::black_box;
-
+use wasm_bench_test::{ComponentHost, ModuleHost};
 
 fn rust_to_wasm_module(c: &mut Criterion) {
     let mut host = ModuleHost::new().unwrap();
@@ -17,10 +16,5 @@ fn rust_to_wasm_component(c: &mut Criterion) {
     });
 }
 
-criterion_group!(
-    benches,
-    rust_to_wasm_module,
-    rust_to_wasm_component,
-);
+criterion_group!(benches, rust_to_wasm_module, rust_to_wasm_component);
 criterion_main!(benches);
-

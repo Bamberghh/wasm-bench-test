@@ -15,4 +15,3 @@ impl Guest for ComponentWorld {
 }
 
 export!(ComponentWorld);
-

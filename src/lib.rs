@@ -1,4 +1,7 @@
-use wasmtime::{Config, Engine, Instance, Module, Store, TypedFunc, component::{self, Component}};
+use wasmtime::{
+    Config, Engine, Instance, Module, Store, TypedFunc,
+    component::{self, Component},
+};
 use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxView, WasiView};
 
 pub struct ModuleState {}
@@ -13,15 +16,13 @@ impl ModuleHost {
         let mut config = Config::new();
         config.strategy(wasmtime::Strategy::Cranelift);
         let engine = Engine::new(&config)?;
-        let module_path = "module/target/wasm32-unknown-unknown/release/wasm_bench_test_module.wasm";
+        let module_path =
+            "module/target/wasm32-unknown-unknown/release/wasm_bench_test_module.wasm";
         let module = Module::from_file(&engine, module_path)?;
         let mut store = Store::new(&engine, ModuleState {});
         let instance = Instance::new(&mut store, &module, &[])?;
         let add = instance.get_typed_func(&mut store, "add")?;
-        Ok(Self {
-            store,
-            add,
-        })
+        Ok(Self { store, add })
     }
 
     pub fn call_add(&mut self, x: i32, y: i32) -> wasmtime::Result<i32> {
@@ -44,7 +45,7 @@ impl WasiView for ComponentState {
 
 pub struct ComponentHost {
     store: Store<ComponentState>,
-    add: component::TypedFunc<(i32, i32), (i32,)>
+    add: component::TypedFunc<(i32, i32), (i32,)>,
 }
 
 impl ComponentHost {
@@ -59,11 +60,16 @@ impl ComponentHost {
             resource_table: ResourceTable::new(),
         };
         let mut store = Store::new(&engine, state);
-        let component_path = "component/target/wasm32-wasip2/release/wasm_bench_test_component.wasm";
+        let component_path =
+            "component/target/wasm32-wasip2/release/wasm_bench_test_component.wasm";
         let component = Component::from_file(&engine, component_path)?;
         let instance = linker.instantiate(&mut store, &component)?;
         let interface_idx = instance
-            .get_export_index(&mut store, None, "wasm-bench-test:component/component@0.1.0")
+            .get_export_index(
+                &mut store,
+                None,
+                "wasm-bench-test:component/component@0.1.0",
+            )
             .expect("Cannot get `wasm-bench-test:component/component@0.1.0` interface");
         let parent_export_idx = Some(&interface_idx);
         let add_idx = instance
@@ -73,17 +79,13 @@ impl ComponentHost {
             .get_func(&mut store, add_idx)
             .expect("Unreachable since we've got add_idx");
         let add = add_untyped.typed(&mut store)?;
-        Ok(Self {
-            store,
-            add,
-        })
+        Ok(Self { store, add })
     }
 
     pub fn call_add(&mut self, x: i32, y: i32) -> wasmtime::Result<i32> {
         self.add.call(&mut self.store, (x, y)).map(|(r,)| r)
     }
 }
-
 
 #[cfg(test)]
 mod tests {
