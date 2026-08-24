@@ -1,6 +1,6 @@
 Probably useless microbenchmarks to satisfy my curiousity in Wasmtime call overheads.
 
-To run the benchmarks run `cargo build --release` in each of the module types.
+To run the benchmarks run `cargo build --release` in each of the module types: "cdylib", "module", "component".
 
 Each of the benchmarked functions is just an `add` function which adds two `i32`s, implemented in the respective form.
 
@@ -11,4 +11,4 @@ rust_to_wasm_module     time:   [26.165 ns 26.210 ns 26.255 ns] // WASM core mod
 rust_to_wasm_component  time:   [669.92 ns 671.71 ns 673.65 ns] // WASM component call
 ```
 
-While I do understand why calling WASM is slower than calling the native dylib, I don't understand why the component call has a 25x higher time than the core module call.
+While I do understand why calling WASM is slower than calling a native dylib, I don't understand why the component call has a 25x higher time than the core module call.
