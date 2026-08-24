@@ -1,8 +1,31 @@
+use libloading::os::windows as libloading_imp;
 use wasmtime::{
     Config, Engine, Instance, Module, Store, TypedFunc,
     component::{self, Component},
 };
 use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxView, WasiView};
+
+pub struct CDylibHost {
+    add: libloading_imp::Symbol<unsafe extern "C" fn(i32, i32) -> i32>,
+    _lib: libloading::Library,
+}
+
+impl CDylibHost {
+    pub fn new() -> Result<Self, libloading::Error> {
+        unsafe {
+            let lib = libloading::Library::new("cdylib/target/release/wasm_bench_test_cdylib.dll")?;
+            let add: libloading::Symbol<unsafe extern "C" fn(i32, i32) -> i32> = lib.get(b"add")?;
+            Ok(Self {
+                add: add.into_raw(),
+                _lib: lib,
+            })
+        }
+    }
+
+    pub fn call_add(&self, x: i32, y: i32) -> i32 {
+        unsafe { (self.add)(x, y) }
+    }
+}
 
 pub struct ModuleState {}
 
@@ -90,6 +113,14 @@ impl ComponentHost {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn cdylib() -> Result<(), libloading::Error> {
+        let host = CDylibHost::new()?;
+        let result = host.call_add(1, 2);
+        assert_eq!(result, 3);
+        Ok(())
+    }
 
     #[test]
     fn module() -> wasmtime::Result<()> {
