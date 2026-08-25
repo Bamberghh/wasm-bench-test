@@ -1,6 +1,6 @@
 use criterion::{Criterion, criterion_group, criterion_main};
 use std::{hint::black_box, time::Duration};
-use wasm_bench_test::{CDylibHost, ComponentHost, ModuleHost};
+use wasm_bench_test::{CDylibHost, ComponentHost, ModuleHost, wasmtime_config};
 
 fn rust_to_cdylib(c: &mut Criterion) {
     let host = CDylibHost::new().unwrap();
@@ -31,15 +31,33 @@ fn rust_to_wasm_module_to_rust(c: &mut Criterion) {
 }
 
 fn rust_to_wasm_component(c: &mut Criterion) {
-    let mut host = ComponentHost::new().unwrap();
+    let mut host = ComponentHost::new(&wasmtime_config()).unwrap();
     c.bench_function("rust_to_wasm_component", |b| {
         b.iter(|| host.call_add(black_box(1), black_box(2)).unwrap())
     });
 }
 
 fn rust_to_wasm_component_to_rust(c: &mut Criterion) {
-    let mut host = ComponentHost::new().unwrap();
+    let mut host = ComponentHost::new(&wasmtime_config()).unwrap();
     c.bench_function("rust_to_wasm_component_to_rust", |b| {
+        b.iter(|| host.call_add_host(black_box(1)).unwrap())
+    });
+}
+
+fn rust_to_wasm_component_noasync(c: &mut Criterion) {
+    let mut config = wasmtime_config();
+    config.concurrency_support(false);
+    let mut host = ComponentHost::new(&config).unwrap();
+    c.bench_function("rust_to_wasm_component_noasync", |b| {
+        b.iter(|| host.call_add(black_box(1), black_box(2)).unwrap())
+    });
+}
+
+fn rust_to_wasm_component_noasync_to_rust(c: &mut Criterion) {
+    let mut config = wasmtime_config();
+    config.concurrency_support(false);
+    let mut host = ComponentHost::new(&config).unwrap();
+    c.bench_function("rust_to_wasm_component_noasync_to_rust", |b| {
         b.iter(|| host.call_add_host(black_box(1)).unwrap())
     });
 }
@@ -57,5 +75,7 @@ criterion_group!(
         rust_to_wasm_module_to_rust,
         rust_to_wasm_component,
         rust_to_wasm_component_to_rust,
+        rust_to_wasm_component_noasync,
+        rust_to_wasm_component_noasync_to_rust,
 );
 criterion_main!(benches);

@@ -5,6 +5,12 @@ use wasmtime::{
 };
 use wasmtime_wasi::{ResourceTable, WasiCtx, WasiCtxView, WasiView};
 
+pub fn wasmtime_config() -> Config {
+    let mut config = Config::new();
+    config.strategy(wasmtime::Strategy::Cranelift);
+    config
+}
+
 pub struct CDylibHost {
     add: libloading_imp::Symbol<unsafe extern "C" fn(i32, i32) -> i32>,
     add_host_x:
@@ -98,9 +104,7 @@ pub struct ComponentHost {
 }
 
 impl ComponentHost {
-    pub fn new() -> wasmtime::Result<Self> {
-        let mut config = Config::new();
-        config.strategy(wasmtime::Strategy::Cranelift);
+    pub fn new(config: &Config) -> wasmtime::Result<Self> {
         let engine = Engine::new(&config)?;
         let mut linker = component::Linker::new(&engine);
         wasmtime_wasi::p2::add_to_linker_sync(&mut linker)?;
@@ -175,7 +179,7 @@ mod tests {
 
     #[test]
     fn component() -> wasmtime::Result<()> {
-        let mut host = ComponentHost::new()?;
+        let mut host = ComponentHost::new(&wasmtime_config())?;
         assert_eq!(host.call_add(1, 2)?, 3);
         Ok(())
     }
