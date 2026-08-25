@@ -1,10 +1,16 @@
 package wasm-bench-test:component@0.1.0;
 
+interface host {
+    add-host-y: func(x: s32) -> s32;
+}
+
 interface component {
     add: func(x: s32, y: s32) -> s32;
+    add-host-x: func(x: s32) -> s32;
 }
 
 world component-world {
+    import host;
     export component;
 }
 
