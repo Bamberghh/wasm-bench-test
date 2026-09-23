@@ -8,8 +8,8 @@ criterion = "0.8.2"
 
 [dependencies]
 libloading = "0.9.0"
-wasmtime = "48.0.0"
-wasmtime-wasi = "48.0.0"
+wasmtime = "49.0.0"
+wasmtime-wasi = "49.0.0"
 
 [[bench]]
 name = "call"
